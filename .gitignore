@@ -1,0 +1,28 @@
+# Build output
+build/
+/test_ring
+*.o
+*.a
+*.dylib
+compile_commands.json
+
+# Editor (keep shared project settings)
+.vscode/*
+!.vscode/settings.json
+.idea/
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# Data / secrets
+*.csv
+.env
