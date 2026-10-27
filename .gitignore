@@ -26,3 +26,6 @@ node_modules/
 # Data / secrets
 *.csv
 .env
+
+# Generated tiles / downloads
+ingest/dataset/
