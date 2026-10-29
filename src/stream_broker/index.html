@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Fashion Week Stream</title>
+    <style>
+        body { font-family: monospace; background: #111; color: #0f0; padding: 20px; }
+        #dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .panel { border: 1px solid #333; padding: 15px; background: #000; }
+        h2 { color: #fff; margin-top: 0; }
+        #terminal { height: 300px; overflow-y: auto; color: #aaa; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>Dual-Engine Fashion Dashboard</h1>
+    
+    <div id="dashboard">
+        <div class="panel">
+            <h2>Telemetry Stream</h2>
+            <p>Connection State: <span id="status" style="color: yellow;">Connecting...</span></p>
+            <p>Frames Received: <span id="frameCount">0</span></p>
+            <p>Current Frame Latency: <span id="latency">0</span> ms</p>
+        </div>
+        <div class="panel">
+            <h2>Raw WebRTC Buffer</h2>
+            <div id="terminal"></div>
+        </div>
+    </div>
+
+    <script>
+        const pc = new RTCPeerConnection({
+            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+        });
+
+        // The browser must create the DataChannel before creating the offer
+        const dataChannel = pc.createDataChannel('fashion-stream');
+        let frameCounter = 0;
+
+        dataChannel.onopen = () => {
+            document.getElementById('status').innerText = 'Connected (Sub-100ms Fanout Active)';
+            document.getElementById('status').style.color = '#0f0';
+        };
+
+        dataChannel.onmessage = (event) => {
+            frameCounter++;
+            const payload = JSON.parse(event.data);
+            const latency = Date.now() - payload.timestamp;
+            
+            // Update UI metrics
+            document.getElementById('frameCount').innerText = frameCounter;
+            document.getElementById('latency').innerText = latency;
+
+            // Log raw buffer to terminal (limited to 50 lines to prevent DOM lag)
+            const terminal = document.getElementById('terminal');
+            terminal.innerHTML = `[RCV] Frame ${payload.frame_id} | Size: ${payload.bytes} bytes<br>` + terminal.innerHTML;
+            if (terminal.childNodes.length > 50) terminal.removeChild(terminal.lastChild);
+        };
+
+        // Standard WebRTC SDP Exchange
+        pc.createOffer().then(offer => pc.setLocalDescription(offer)).then(() => {
+            return fetch('/sdp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(pc.localDescription)
+            });
+        }).then(res => res.json()).then(answer => {
+            pc.setRemoteDescription(new RTCSessionDescription(answer));
+        }).catch(console.error);
+    </script>
+</body>
+</html>
