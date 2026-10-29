@@ -1,2 +1,1 @@
-cpp for fashion 
-high quality images
+high quality images and video streams
