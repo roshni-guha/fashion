@@ -1,0 +1,50 @@
+services:
+  edge-gateway:
+    build: .
+    command: ["./build/edge_router"]
+    environment:
+      # Inside Docker each node is reached by its service name, not localhost
+      NODE_A_ADDR: node-a:8081
+      NODE_B_ADDR: node-b:8082
+      NODE_C_ADDR: node-c:8083
+    ports:
+      - "8080:8080"
+    depends_on:
+      - node-a
+      - node-b
+      - node-c
+
+  node-a:
+    build: .
+    command: ["./build/node_server", "8081", "/dataset/fashion_item_files"]
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./ingest/dataset:/dataset:ro
+
+  node-b:
+    build: .
+    command: ["./build/node_server", "8082", "/dataset/fashion_item_files"]
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./ingest/dataset:/dataset:ro
+
+  node-c:
+    build: .
+    command: ["./build/node_server", "8083", "/dataset/fashion_item_files"]
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./ingest/dataset:/dataset:ro
+
+  stream-broker:
+    build: ./src/stream_broker
+    environment:
+      # Route WebRTC through one published UDP port and advertise the host's address,
+      # since the browser can't reach the container's private IP
+      WEBRTC_UDP_PORT: "8443"
+      WEBRTC_PUBLIC_IP: 127.0.0.1
+    ports:
+      - "8090:8090"
+      - "8443:8443/udp"
