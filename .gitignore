@@ -20,12 +20,24 @@ __pycache__/
 .venv/
 venv/
 
-# Node
+# Node / Next.js
 node_modules/
+.next/
+out/
+*.tsbuildinfo
+npm-debug.log*
 
 # Data / secrets
 *.csv
-.env
+.env*
+!.env.example
+*.pem
 
 # Generated tiles / downloads
 ingest/dataset/
+
+# Go
+src/stream_broker/fashion-broker
+*.exe
+*.test
+*.out

@@ -1,0 +1,11 @@
+# Keep the build context small and avoid copying host build artifacts
+.git
+build/
+test_ring
+.venv/
+.vscode/
+**/node_modules
+dashboard/
+ingest/dataset/
+src/stream_broker/
+**/.DS_Store
