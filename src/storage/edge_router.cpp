@@ -39,14 +39,11 @@ int main() {
         auto node_res = client.Get("/tiles/" + tile_path);
 
         if (node_res && node_res->status == 200) {
-            // Forward the image back to the client
             res.set_content(node_res->body, node_res->get_header_value("Content-Type"));
-            
-            // Inject a custom header so we can visually prove the routing worked
             res.set_header("X-Served-By-Node", target_node->id);
-        } else {
-            res.status = 404;
-            res.set_content("Tile missing on backend " + target_node->id, "text/plain");
+            if (node_res->has_header("X-Cache")) {
+                res.set_header("X-Cache", node_res->get_header_value("X-Cache"));
+            }
         }
     });
 
